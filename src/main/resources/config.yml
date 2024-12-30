@@ -1,0 +1,61 @@
+settings:
+  default-hearts: 10
+  min-hearts: 1
+  max-hearts: 20
+  heart-item-name: "&c❤ Heart"
+  heart-item-lore:
+    - "&7Right-click to consume this heart"
+    - "&7and increase your max health"
+  difficulty: "MEDIUM"
+  recipe-materials:
+    EASY:
+      top_corners: "NETHER_STAR"
+      center_row: "IRON_INGOT"
+      skull: "SKELETON_SKULL"
+      bottom: "OBSIDIAN"
+    MEDIUM:
+      top_corners: "GLASS"
+      center_row: "DIAMOND"
+      skull: "WITHER_SKELETON_SKULL"
+      bottom: "OBSIDIAN"
+    HARD:
+      top_corners: "GLASS"
+      center_row: "NETHERITE_INGOT"
+      skull: "WITHER_SKELETON_SKULL"
+      bottom: "CRYING_OBSIDIAN"
+    CUSTOM:
+      top_corners: "GLASS"
+      center_row: "DIAMOND"
+      skull: "WITHER_SKELETON_SKULL"
+      bottom: "OBSIDIAN"
+messages:
+  prefix: "&8[&cLifeSteal&8] "
+  no-permission: "&cYou don't have permission to do this!"
+  hearts-withdrawn: "&aYou have withdrawn &c%amount% &ahearts!"
+  hearts-deposited: "&aYou have deposited &c%amount% &ahearts!"
+  hearts-reset: "&aAll players' hearts have been reset to default!"
+  hearts-reset-confirm: "&cAre you sure you want to reset all hearts? Type /lifesteal reset confirm"
+  hearts-given: "&aGave &c%amount% &ahearts to &e%player%"
+  not-enough-hearts: "&cYou don't have enough hearts to withdraw!"
+  minimum-hearts-reached: "&cYou can't have less than %min% hearts!"
+  maximum-hearts-reached: "&cYou can't have more than %max% hearts!"
+  help:
+    header: "&8&l&m-----&r &c&lLifeSteal Help &8&l&m-----"
+    format: "&c/%command% &8- &7%description%"
+    footer: "&8&l&m-------------------------"
+    commands:
+      - command: "lifesteal help"
+        description: "Shows this help menu"
+        permission: "lifesteal.use"
+      - command: "lifesteal withdraw <amount>"
+        description: "Withdraw hearts into physical items"
+        permission: "lifesteal.withdraw"
+      - command: "lifesteal deposit"
+        description: "Deposit all heart items in your inventory"
+        permission: "lifesteal.deposit"
+      - command: "lifesteal reset"
+        description: "Reset all players' hearts to default"
+        permission: "lifesteal.admin.reset"
+      - command: "lifesteal giveheart <amount>"
+        description: "Give yourself heart items"
+        permission: "lifesteal.admin.give" 

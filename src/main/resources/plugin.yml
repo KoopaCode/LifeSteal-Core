@@ -1,0 +1,36 @@
+name: LifeStealCore
+version: '1.0.0'
+main: com.koopa.lifestealcore.LifeStealCore
+api-version: '1.13'
+author: Koopa
+description: A LifeSteal plugin where players can steal hearts from others
+
+commands:
+  lifesteal:
+    description: Main command for LifeSteal plugin
+    usage: /<command> <help|withdraw|deposit|reset|giveheart|recipe|config>
+    permission: lifesteal.use
+    aliases: [ls] 
+
+permissions:
+  lifesteal.use:
+    description: Allows use of basic LifeSteal commands
+    default: true
+  lifesteal.withdraw:
+    description: Allows withdrawing hearts
+    default: true
+  lifesteal.deposit:
+    description: Allows depositing hearts
+    default: true
+  lifesteal.admin.config:
+    description: Allows access to the configuration GUI
+    default: op
+  lifesteal.admin.reset:
+    description: Allows resetting all players' hearts
+    default: op
+  lifesteal.admin.give:
+    description: Allows giving heart items
+    default: op
+  lifesteal.admin.debug:
+    description: Allows access to debug commands
+    default: op 
