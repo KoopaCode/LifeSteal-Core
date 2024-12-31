@@ -24,6 +24,7 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        // Load their hearts from hearts.yml and update their health
         plugin.getHeartManager().updatePlayerMaxHealth(player);
     }
 
@@ -31,20 +32,25 @@ public class PlayerListener implements Listener {
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player victim = event.getEntity();
         Player killer = victim.getKiller();
+        int victimHearts = plugin.getHeartManager().getPlayerHearts(victim);
 
-        if (killer != null && killer != victim) {
-            int victimHearts = plugin.getHeartManager().getPlayerHearts(victim);
-            int killerHearts = plugin.getHeartManager().getPlayerHearts(killer);
-            
-            if (victimHearts > plugin.getConfig().getInt("settings.min-hearts")) {
-                plugin.getHeartManager().setPlayerHearts(victim, victimHearts - 1);
-                plugin.getHeartManager().setPlayerHearts(killer, killerHearts + 1);
-                killer.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 1));
-            }
+        // Check if this is their last heart
+        if (victimHearts <= 1) {
+            // Ban them but keep minimum health for game mechanics
+            plugin.getBanManager().banPlayer(victim, killer); // Ban with dramatic effect
+            plugin.getHeartManager().setPlayerHearts(victim, 0); // This won't set health to 0
+            return;
         }
 
-        // Ban the player
-        plugin.getBanManager().banPlayer(victim);
+        // Only lose hearts to player kills
+        if (killer != null && killer != victim) {
+            // PvP death - transfer heart
+            int killerHearts = plugin.getHeartManager().getPlayerHearts(killer);
+            plugin.getHeartManager().setPlayerHearts(victim, victimHearts - 1);
+            plugin.getHeartManager().setPlayerHearts(killer, killerHearts + 1);
+            killer.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 1));
+        }
+        // Non-PvP deaths don't lose hearts unless it was their last heart
     }
 
     @EventHandler

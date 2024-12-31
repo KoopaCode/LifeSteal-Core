@@ -125,15 +125,32 @@ public class BanManager {
         Bukkit.broadcastMessage(MessageUtils.color("&c&lBANISHED TO THE SHADOW REALM"));
         Bukkit.broadcastMessage("");
 
-        // Ban the player
+        // Add to banned players list
+        bannedPlayers.put(player.getUniqueId(), true);
+        banData.set(player.getUniqueId().toString() + ".name", player.getName());
+        banData.set(player.getUniqueId().toString() + ".banTime", System.currentTimeMillis());
+        saveBanData();
+
+        // Ban and kick the player
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            // Ban the player
+            Bukkit.getBanList(BanList.Type.NAME).addBan(
+                player.getName(),
+                MessageUtils.color(
+                    "&c&lYOU HAVE BEEN BANISHED!\n\n" +
+                    "&7You have lost all your hearts...\n" +
+                    "&7Other players must use a Revival Beacon to bring you back!"
+                ),
+                null, // No expiry
+                "LifeSteal System"
+            );
+            
+            // Kick them with the message
             player.kickPlayer(MessageUtils.color(
                 "&c&lYOU HAVE BEEN BANISHED!\n\n" +
                 "&7You have lost all your hearts...\n" +
-                "&7Find a Revival Beacon to return!"
+                "&7Other players must use a Revival Beacon to bring you back!"
             ));
-            plugin.getConfig().set("banned-players." + player.getUniqueId(), true);
-            plugin.saveConfig();
         }, 2L); // Small delay for dramatic effect
     }
 

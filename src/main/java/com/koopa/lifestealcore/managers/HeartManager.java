@@ -36,6 +36,17 @@ public class HeartManager {
             }
         }
         data = YamlConfiguration.loadConfiguration(dataFile);
+        
+        // Load all saved hearts into memory
+        for (String uuidString : data.getKeys(false)) {
+            try {
+                UUID uuid = UUID.fromString(uuidString);
+                int hearts = data.getInt(uuidString);
+                playerHearts.put(uuid, hearts);
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Invalid UUID in hearts.yml: " + uuidString);
+            }
+        }
     }
 
     public void saveAllData() {
@@ -54,18 +65,43 @@ public class HeartManager {
     }
 
     public int getPlayerHearts(Player player) {
-        return playerHearts.getOrDefault(player.getUniqueId(), 
-            plugin.getConfig().getInt("settings.default-hearts"));
+        UUID uuid = player.getUniqueId();
+        if (!playerHearts.containsKey(uuid)) {
+            // If player doesn't have hearts saved, give them default hearts
+            int defaultHearts = plugin.getConfig().getInt("settings.default-hearts");
+            playerHearts.put(uuid, defaultHearts);
+            savePlayerHearts(uuid);
+        }
+        return playerHearts.get(uuid);
     }
 
     public void setPlayerHearts(Player player, int hearts) {
-        playerHearts.put(player.getUniqueId(), hearts);
-        updatePlayerMaxHealth(player);
+        UUID uuid = player.getUniqueId();
+        // Ensure minimum of 1 health for game mechanics
+        hearts = Math.max(0, hearts);
+        playerHearts.put(uuid, hearts);
+        savePlayerHearts(uuid);
+        
+        if (hearts > 0) {
+            updatePlayerMaxHealth(player);
+        }
+    }
+
+    private void savePlayerHearts(UUID uuid) {
+        // Save to hearts.yml immediately when changed
+        data.set(uuid.toString(), playerHearts.get(uuid));
+        try {
+            data.save(dataFile);
+        } catch (Exception e) {
+            plugin.getLogger().severe("Could not save hearts data!");
+            e.printStackTrace();
+        }
     }
 
     public void updatePlayerMaxHealth(Player player) {
         int hearts = getPlayerHearts(player);
-        player.setMaxHealth(hearts * 2);
+        // Minimum of 1 health (0.5 hearts) for the game
+        player.setMaxHealth(Math.max(1, hearts * 2));
     }
 
     public void setHearts(UUID uuid, int hearts) {
