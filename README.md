@@ -15,6 +15,7 @@ A dramatic and feature-rich LifeSteal plugin for Minecraft servers. Take hearts 
 ## ✦ Downloads
 Pre-compiled builds are available at:
 - [SpigotMC](https://www.spigotmc.org/resources/lifesteal-core-1-13-1-20-4.121599/)
+- [Modrinth](https://modrinth.com/plugin/lifestealcore)
 - [GitHub Releases](https://github.com/KoopaCode/LifeSteal-Core/releases)
 
 ## ✦ Requirements
