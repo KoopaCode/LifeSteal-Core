@@ -1,0 +1,105 @@
+name: Build
+env:
+  PLUGIN_NAME: LifeStealCore
+  PLUGIN_FILE: lifestealcore
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+        
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+
+    - name: Debug Directory
+      run: ls -la target/
+      
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.PLUGIN_FILE }}-1.0.0
+        path: target/${{ env.PLUGIN_FILE }}-1.0.0.jar
+        retention-days: 5
+
+    - name: Send Build Success Notification
+      if: success()
+      uses: sarisia/actions-status-discord@v1
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        title: "✅ Build Success!"
+        description: "A new build of ${{ env.PLUGIN_NAME }} has been created\nCommit: ${{ github.sha }}"
+        color: 0x00ff00
+        username: "🏺Artifact Build's"
+        avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+
+    - name: Send Build Failed Notification
+      if: failure()
+      uses: sarisia/actions-status-discord@v1
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        title: "❌ Build Failed!"
+        description: "The build for ${{ env.PLUGIN_NAME }} has failed\nCommit: ${{ github.sha }}"
+        color: 0xff0000
+        username: "🏺Artifact Build's"
+        avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+
+  release:
+    needs: build
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ env.PLUGIN_FILE }}-1.0.0
+        
+    - name: Upload Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: ${{ env.PLUGIN_FILE }}-1.0.0.jar
+        fail_on_unmatched_files: true
+
+    - name: Send Release Success Notification
+      if: success()
+      uses: sarisia/actions-status-discord@v1
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        title: "🎉 Release Published!"
+        description: "Version 1.0.0 of ${{ env.PLUGIN_NAME }} is now available!\nDownload: https://github.com/${{ github.repository }}/releases/latest"
+        color: 0x00ff00
+        username: "🏺Artifact Build's"
+        avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+
+    - name: Send Release Failed Notification
+      if: failure()
+      uses: sarisia/actions-status-discord@v1
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        title: "❌ Release Failed!"
+        description: "The release for ${{ env.PLUGIN_NAME }} has failed\nVersion: 1.0.0"
+        color: 0xff0000
+        username: "🏺Artifact Build's"
+        avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" 
