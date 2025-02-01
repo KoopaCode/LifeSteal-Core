@@ -1,8 +1,4 @@
 name: Build
-env:
-  PLUGIN_NAME: LifeStealCore
-  PLUGIN_FILE: lifestealcore
-
 on:
   push:
     branches: [ "main" ]
@@ -28,8 +24,11 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    - name: Get Version
-      run: echo "PLUGIN_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+    - name: Get Project Info
+      run: |
+        echo "PLUGIN_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        echo "PLUGIN_NAME=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout)" >> $GITHUB_ENV
+        echo "PLUGIN_FILE=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)" >> $GITHUB_ENV
         
     - name: Build with Maven
       run: mvn -B package --file pom.xml
