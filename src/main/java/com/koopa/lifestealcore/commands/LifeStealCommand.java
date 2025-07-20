@@ -61,7 +61,7 @@ public class LifeStealCommand implements CommandExecutor {
             player.sendMessage(MessageUtils.color("&c/lifesteal config &8- &7Open configuration GUI"));
         }
         if (player.hasPermission("lifesteal.admin.debug")) {
-            player.sendMessage(MessageUtils.color("&c/lifesteal debug <ban|unban> <player> &8- &7Test ban/unban messages"));
+            player.sendMessage(MessageUtils.color("&c/lifesteal debug <ban|unban|recipe> <player> &8- &7Test ban/unban messages or show recipe info"));
         }
     }
 
@@ -187,33 +187,68 @@ public class LifeStealCommand implements CommandExecutor {
             return;
         }
 
-        if (args.length < 3) {
-            player.sendMessage(MessageUtils.color("&cUsage: /lifesteal debug <ban|unban> <player>"));
+        if (args.length < 2) {
+            player.sendMessage(MessageUtils.color("&cUsage: /lifesteal debug <ban|unban|recipe> [player]"));
             return;
         }
 
         String action = args[1].toLowerCase();
-        String targetName = args[2];
-        Player target = Bukkit.getPlayer(targetName);
-
+        
         switch (action) {
-            case "ban" -> {
-                if (target == null) {
-                    player.sendMessage(MessageUtils.color("&cPlayer not found!"));
+            case "ban", "unban" -> {
+                if (args.length < 3) {
+                    player.sendMessage(MessageUtils.color("&cUsage: /lifesteal debug <ban|unban> <player>"));
                     return;
                 }
-                // Test ban message with both killer and victim
-                plugin.getBanManager().banPlayer(target, player);
-                player.sendMessage(MessageUtils.color("&aDebug: Tested ban message for " + target.getName() + 
-                    " (killed by " + player.getName() + ")"));
+                String targetName = args[2];
+                Player target = Bukkit.getPlayer(targetName);
+                
+                if (action.equals("ban")) {
+                    if (target == null) {
+                        player.sendMessage(MessageUtils.color("&cPlayer not found!"));
+                        return;
+                    }
+                    // Test ban message with both killer and victim
+                    plugin.getBanManager().banPlayer(target, player);
+                    player.sendMessage(MessageUtils.color("&aDebug: Tested ban message for " + target.getName() + 
+                        " (killed by " + player.getName() + ")"));
+                } else {
+                    // Test unban/revival message
+                    plugin.getBanManager().unbanPlayer(player, targetName);
+                    player.sendMessage(MessageUtils.color("&aDebug: Tested unban message for " + targetName + 
+                        " (revived by " + player.getName() + ")"));
+                }
             }
-            case "unban" -> {
-                // Test unban/revival message
-                plugin.getBanManager().unbanPlayer(player, targetName);
-                player.sendMessage(MessageUtils.color("&aDebug: Tested unban message for " + targetName + 
-                    " (revived by " + player.getName() + ")"));
+            case "recipe" -> {
+                // Show recipe information
+                String difficulty = plugin.getConfig().getString("settings.difficulty", "MEDIUM");
+                player.sendMessage(MessageUtils.color("&8&l=== &c&lRecipe Information &8&l==="));
+                player.sendMessage(MessageUtils.color("&7Current difficulty: &f" + difficulty));
+                player.sendMessage(MessageUtils.color("&7Heart recipe: &f" + getHeartRecipeInfo(difficulty)));
+                player.sendMessage(MessageUtils.color("&7Beacon recipe: &f" + getBeaconRecipeInfo(difficulty)));
+                player.sendMessage(MessageUtils.color("&7"));
+                player.sendMessage(MessageUtils.color("&7Use &c/lifesteal config &7to change recipes"));
             }
-            default -> player.sendMessage(MessageUtils.color("&cInvalid debug action! Use 'ban' or 'unban'"));
+            default -> player.sendMessage(MessageUtils.color("&cInvalid debug action! Use 'ban', 'unban', or 'recipe'"));
         }
+    }
+
+    private String getHeartRecipeInfo(String difficulty) {
+        String configPath = "settings.heart-recipe-materials." + difficulty;
+        String corners = plugin.getConfig().getString(configPath + ".corners", "DIAMOND");
+        String center = plugin.getConfig().getString(configPath + ".center", "EMERALD");
+        String core = plugin.getConfig().getString(configPath + ".core", "REDSTONE_BLOCK");
+        
+        return String.format("4x %s, 4x %s, 1x %s", corners, center, core);
+    }
+
+    private String getBeaconRecipeInfo(String difficulty) {
+        String configPath = "settings.recipe-materials." + difficulty;
+        String corners = plugin.getConfig().getString(configPath + ".top_corners", "GLASS");
+        String center = plugin.getConfig().getString(configPath + ".center_row", "DIAMOND");
+        String skull = plugin.getConfig().getString(configPath + ".skull", "WITHER_SKELETON_SKULL");
+        String bottom = plugin.getConfig().getString(configPath + ".bottom", "OBSIDIAN");
+        
+        return String.format("2x %s, 3x %s, 1x %s, 3x %s", corners, center, skull, bottom);
     }
 } 

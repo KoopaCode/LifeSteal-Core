@@ -28,6 +28,23 @@ settings:
       center_row: "DIAMOND"
       skull: "WITHER_SKELETON_SKULL"
       bottom: "OBSIDIAN"
+  heart-recipe-materials:
+    EASY:
+      corners: "GOLD_INGOT"
+      center: "DIAMOND"
+      core: "REDSTONE"
+    MEDIUM:
+      corners: "NETHERITE_INGOT"
+      center: "EMERALD"
+      core: "REDSTONE_BLOCK"
+    HARD:
+      corners: "DIAMOND_BLOCK"
+      center: "NETHERITE_BLOCK"
+      core: "REDSTONE_BLOCK"
+    CUSTOM:
+      corners: "DIAMOND"
+      center: "EMERALD"
+      core: "REDSTONE_BLOCK"
 messages:
   prefix: "&8[&cLifeSteal&8] "
   no-permission: "&cYou don't have permission to do this!"

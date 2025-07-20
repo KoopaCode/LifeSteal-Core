@@ -17,13 +17,14 @@ public class ConfigGUI {
     private final LifeStealCore plugin;
     private static final String GUI_TITLE = "§8LifeSteal Configuration";
     private static final String RECIPE_GUI_TITLE = "§8Revival Beacon Recipe";
+    private static final String HEART_RECIPE_GUI_TITLE = "§8Heart Crafting Recipe";
 
     public ConfigGUI(LifeStealCore plugin) {
         this.plugin = plugin;
     }
 
     public void openConfigGUI(Player player) {
-        Inventory gui = Bukkit.createInventory(null, 36, GUI_TITLE);
+        Inventory gui = Bukkit.createInventory(null, 54, GUI_TITLE);
 
         // Fill with gray stained glass panes
         for (int i = 0; i < gui.getSize(); i++) {
@@ -31,7 +32,7 @@ public class ConfigGUI {
         }
 
         // Default Hearts Setting (Heart of the Sea)
-        gui.setItem(11, createConfigItem(Material.HEART_OF_THE_SEA,
+        gui.setItem(10, createConfigItem(Material.HEART_OF_THE_SEA,
                 "&c&lDefault Hearts",
                 "&7Current value: &f" + plugin.getConfig().getInt("settings.default-hearts"),
                 "&7",
@@ -39,7 +40,7 @@ public class ConfigGUI {
                 "&7hearts for new players"));
 
         // Min Hearts Setting (Redstone)
-        gui.setItem(13, createConfigItem(Material.REDSTONE,
+        gui.setItem(12, createConfigItem(Material.REDSTONE,
                 "&c&lMinimum Hearts",
                 "&7Current value: &f" + plugin.getConfig().getInt("settings.min-hearts"),
                 "&7",
@@ -47,7 +48,7 @@ public class ConfigGUI {
                 "&7hearts a player can have"));
 
         // Max Hearts Setting (Diamond)
-        gui.setItem(15, createConfigItem(Material.DIAMOND,
+        gui.setItem(14, createConfigItem(Material.DIAMOND,
                 "&c&lMaximum Hearts",
                 "&7Current value: &f" + plugin.getConfig().getInt("settings.max-hearts"),
                 "&7",
@@ -55,14 +56,21 @@ public class ConfigGUI {
                 "&7hearts a player can have"));
 
         // Heart Item Preview (Nether Star)
-        gui.setItem(21, createConfigItem(Material.NETHER_STAR,
+        gui.setItem(16, createConfigItem(Material.NETHER_STAR,
                 plugin.getConfig().getString("settings.heart-item-name"),
                 "&7",
                 "&7Current heart item settings:",
                 "&7" + String.join("&7", plugin.getConfig().getStringList("settings.heart-item-lore"))));
 
+        // Heart Recipe Viewer (Crafting Table)
+        gui.setItem(28, createConfigItem(Material.CRAFTING_TABLE,
+                "&c&lHeart Crafting Recipe",
+                "&7",
+                "&7Click to view the current",
+                "&7heart crafting recipe"));
+
         // Difficulty Selector (Netherite Ingot)
-        ItemStack difficultyItem = new ItemStack(Material.CRAFTING_TABLE);
+        ItemStack difficultyItem = new ItemStack(Material.NETHERITE_INGOT);
         ItemMeta diffMeta = difficultyItem.getItemMeta();
         String currentDifficulty = plugin.getConfig().getString("settings.difficulty", "MEDIUM");
         diffMeta.setDisplayName(MessageUtils.color("&c&lCrafting Difficulty"));
@@ -70,17 +78,67 @@ public class ConfigGUI {
             MessageUtils.color("&7Current: &f" + currentDifficulty),
             MessageUtils.color("&7"),
             MessageUtils.color("&7Left-Click to change"),
-            MessageUtils.color("&7Right-Click to view recipe")
+            MessageUtils.color("&7Right-Click to view beacon recipe")
         ));
         difficultyItem.setItemMeta(diffMeta);
-        gui.setItem(23, difficultyItem);
+        gui.setItem(30, difficultyItem);
 
         // Save & Reload button (Emerald)
-        gui.setItem(31, createConfigItem(Material.EMERALD,
+        gui.setItem(32, createConfigItem(Material.EMERALD,
                 "&a&lSave & Reload",
                 "&7",
                 "&7Click to save changes",
                 "&7and reload the config"));
+
+        // Reload Recipes button (Anvil)
+        gui.setItem(34, createConfigItem(Material.ANVIL,
+                "&e&lReload Recipes",
+                "&7",
+                "&7Click to reload all",
+                "&7crafting recipes"));
+
+        player.openInventory(gui);
+    }
+
+    public void openHeartRecipeGUI(Player player, String difficulty) {
+        Inventory gui = Bukkit.createInventory(null, 27, HEART_RECIPE_GUI_TITLE);
+        String configPath = "settings.heart-recipe-materials." + difficulty;
+
+        // Fill with gray stained glass panes first
+        for (int i = 0; i < gui.getSize(); i++) {
+            gui.setItem(i, createConfigItem(Material.GRAY_STAINED_GLASS_PANE, " "));
+        }
+
+        // Get recipe materials
+        Material cornerMaterial = Material.valueOf(plugin.getConfig().getString(configPath + ".corners"));
+        Material centerMaterial = Material.valueOf(plugin.getConfig().getString(configPath + ".center"));
+        Material coreMaterial = Material.valueOf(plugin.getConfig().getString(configPath + ".core"));
+
+        // Set recipe items
+        ItemStack corner = createConfigItem(cornerMaterial, "&f" + cornerMaterial.name(), "&7Required: 4");
+        ItemStack center = createConfigItem(centerMaterial, "&f" + centerMaterial.name(), "&7Required: 4");
+        ItemStack core = createConfigItem(coreMaterial, "&f" + coreMaterial.name(), "&7Required: 1");
+
+        // Place items in crafting grid pattern for heart recipe
+        gui.setItem(3, corner);  // Top left
+        gui.setItem(4, center);  // Top middle
+        gui.setItem(5, corner);  // Top right
+        gui.setItem(12, center); // Middle left
+        gui.setItem(13, core);   // Center
+        gui.setItem(14, center); // Middle right
+        gui.setItem(21, corner); // Bottom left
+        gui.setItem(22, center); // Bottom middle
+        gui.setItem(23, corner); // Bottom right
+
+        // Result item
+        ItemStack result = createConfigItem(Material.NETHER_STAR, "&c❤ Heart", 
+            "&7The result of the recipe",
+            "&7in " + difficulty + " mode");
+        gui.setItem(16, result);
+
+        // Back button
+        gui.setItem(18, createConfigItem(Material.ARROW, "&c&lBack to Settings",
+            "&7Click to return to the settings menu"));
 
         player.openInventory(gui);
     }
@@ -95,17 +153,13 @@ public class ConfigGUI {
         }
 
         // Get recipe materials
-        Material cornerMaterial = difficulty.equals("EASY") ? 
-            Material.NETHER_STAR : // Hearts for EASY mode
-            Material.valueOf(plugin.getConfig().getString(configPath + ".top_corners"));
+        Material cornerMaterial = Material.valueOf(plugin.getConfig().getString(configPath + ".top_corners"));
         Material centerMaterial = Material.valueOf(plugin.getConfig().getString(configPath + ".center_row"));
         Material skullMaterial = Material.valueOf(plugin.getConfig().getString(configPath + ".skull"));
         Material bottomMaterial = Material.valueOf(plugin.getConfig().getString(configPath + ".bottom"));
 
         // Set recipe items
-        ItemStack corner = difficulty.equals("EASY") ? 
-            createConfigItem(Material.NETHER_STAR, "&c❤ Heart", "&7Required: 2") :
-            createConfigItem(cornerMaterial, "&f" + cornerMaterial.name(), "&7Required: 2");
+        ItemStack corner = createConfigItem(cornerMaterial, "&f" + cornerMaterial.name(), "&7Required: 2");
         ItemStack center = createConfigItem(centerMaterial, "&f" + centerMaterial.name(), "&7Required: 3");
         ItemStack skull = createConfigItem(skullMaterial, "&f" + skullMaterial.name(), "&7Required: 1");
         ItemStack bottom = createConfigItem(bottomMaterial, "&f" + bottomMaterial.name(), "&7Required: 3");

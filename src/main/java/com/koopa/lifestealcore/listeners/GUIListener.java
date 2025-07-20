@@ -3,6 +3,7 @@ package com.koopa.lifestealcore.listeners;
 import com.koopa.lifestealcore.LifeStealCore;
 import com.koopa.lifestealcore.gui.ConfigGUI;
 import com.koopa.lifestealcore.utils.MessageUtils;
+import com.koopa.lifestealcore.utils.RecipeManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -14,6 +15,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.NamespacedKey;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -41,6 +43,15 @@ public class GUIListener implements Listener {
         
         // Handle Recipe View GUI
         if (title.equals("§8Revival Beacon Recipe")) {
+            event.setCancelled(true);
+            if (event.getSlot() == 18) { // Back button
+                new ConfigGUI(plugin).openConfigGUI((Player) event.getWhoClicked());
+            }
+            return;
+        }
+
+        // Handle Heart Recipe View GUI
+        if (title.equals("§8Heart Crafting Recipe")) {
             event.setCancelled(true);
             if (event.getSlot() == 18) { // Back button
                 new ConfigGUI(plugin).openConfigGUI((Player) event.getWhoClicked());
@@ -111,16 +122,33 @@ public class GUIListener implements Listener {
         if (!player.hasPermission("lifesteal.admin.config")) return;
 
         switch (event.getSlot()) {
-            case 11 -> promptForValue(player, "default-hearts", "Enter new default hearts value:");
-            case 13 -> promptForValue(player, "min-hearts", "Enter new minimum hearts value:");
-            case 15 -> promptForValue(player, "max-hearts", "Enter new maximum hearts value:");
-            case 23 -> handleDifficultyClick(event);
-            case 31 -> {
+            case 10 -> promptForValue(player, "default-hearts", "Enter new default hearts value:");
+            case 12 -> promptForValue(player, "min-hearts", "Enter new minimum hearts value:");
+            case 14 -> promptForValue(player, "max-hearts", "Enter new maximum hearts value:");
+            case 28 -> {
+                // Heart Recipe Viewer
+                String currentDiff = plugin.getConfig().getString("settings.difficulty", "MEDIUM");
+                new ConfigGUI(plugin).openHeartRecipeGUI(player, currentDiff);
+            }
+            case 30 -> handleDifficultyClick(event);
+            case 32 -> {
                 plugin.reloadConfig();
                 player.sendMessage(MessageUtils.color("&aConfiguration reloaded!"));
                 player.closeInventory();
             }
+            case 34 -> {
+                // Reload Recipes
+                reloadRecipes(player);
+            }
         }
+    }
+
+    private void reloadRecipes(Player player) {
+        // Use the main plugin's reload method
+        plugin.reloadRecipes();
+        
+        player.sendMessage(MessageUtils.color("&aRecipes reloaded successfully!"));
+        player.closeInventory();
     }
 
     private void handleDifficultyClick(InventoryClickEvent event) {
@@ -143,6 +171,10 @@ public class GUIListener implements Listener {
             };
             plugin.getConfig().set("settings.difficulty", newDiff);
             plugin.saveConfig();
+            
+            // Reload recipes with new difficulty
+            reloadRecipes(player);
+            
             new ConfigGUI(plugin).openConfigGUI(player);
             player.sendMessage(MessageUtils.color("&aSet crafting difficulty to: " + newDiff));
         }

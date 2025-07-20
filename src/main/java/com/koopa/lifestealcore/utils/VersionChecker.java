@@ -10,31 +10,12 @@ import java.net.URL;
 public class VersionChecker {
     private final LifeStealCore plugin;
     private static final String VERSION_URL = "https://raw.githubusercontent.com/KoopaCode/LifeSteal-Core/refs/heads/main/version/versioncheck";
-    private static final String SPIGOT_URL_FILE = "https://raw.githubusercontent.com/KoopaCode/LifeSteal-Core/refs/heads/main/spigot/url";
+    private static final String SPIGOT_URL = "https://www.spigotmc.org/resources/lifesteal-core-1-13-1-20-4.121599/";
+    private static final String MODRINTH_URL = "https://modrinth.com/plugin/lifestealcore";
     private static final String GITHUB_URL = "https://github.com/KoopaCode/LifeSteal-Core/releases";
-    private String spigotUrl = null;
 
     public VersionChecker(LifeStealCore plugin) {
         this.plugin = plugin;
-        fetchSpigotUrl();
-    }
-
-    private void fetchSpigotUrl() {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            try {
-                URL url = new URL(SPIGOT_URL_FILE);
-                java.net.URLConnection conn = url.openConnection();
-                conn.setUseCaches(false);
-                conn.addRequestProperty("User-Agent", "Mozilla/5.0");
-                
-                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                spigotUrl = reader.readLine().trim();
-                reader.close();
-            } catch (Exception e) {
-                plugin.getLogger().warning("§8§l[§c§lLifeSteal§8§l] §cFailed to fetch Spigot URL: " + e.getMessage());
-                spigotUrl = "https://www.spigotmc.org/resources/lifesteal-core.xxxxx/"; 
-            }
-        });
     }
 
     public void checkVersion() {
@@ -67,7 +48,8 @@ public class VersionChecker {
                         plugin.getLogger().warning("§8§l[§c§lLifeSteal§8§l] §cCurrent version: §f" + currentVersion);
                         plugin.getLogger().warning("§8§l[§c§lLifeSteal§8§l] §cLatest version: §f" + latestVersion);
                         plugin.getLogger().warning("§8§l[§c§lLifeSteal§8§l] §eDownload from:");
-                        plugin.getLogger().warning("§8§l[§c§lLifeSteal§8§l] §bSpigot: §f" + spigotUrl);
+                        plugin.getLogger().warning("§8§l[§c§lLifeSteal§8§l] §bSpigot: §f" + SPIGOT_URL);
+                        plugin.getLogger().warning("§8§l[§c§lLifeSteal§8§l] §bModrinth: §f" + MODRINTH_URL);
                         plugin.getLogger().warning("§8§l[§c§lLifeSteal§8§l] §bGitHub: §f" + GITHUB_URL);
                     } else {
                         // Versions are equal - running latest stable

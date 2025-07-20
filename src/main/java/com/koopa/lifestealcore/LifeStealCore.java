@@ -15,6 +15,7 @@ import org.bukkit.Bukkit;
 public class LifeStealCore extends JavaPlugin {
     private HeartManager heartManager;
     private BanManager banManager;
+    private RecipeManager recipeManager;
     private static LifeStealCore instance;
 
     @Override
@@ -38,9 +39,10 @@ public class LifeStealCore extends JavaPlugin {
         // Initialize managers
         heartManager = new HeartManager(this);
         banManager = new BanManager(this);
+        recipeManager = new RecipeManager(this);
         
         // Register recipes
-        new RecipeManager(this).registerRecipes();
+        recipeManager.registerRecipes();
         
         // Register commands
         getCommand("lifesteal").setExecutor(new LifeStealCommand(this));
@@ -69,6 +71,15 @@ public class LifeStealCore extends JavaPlugin {
 
     public BanManager getBanManager() {
         return banManager;
+    }
+
+    public RecipeManager getRecipeManager() {
+        return recipeManager;
+    }
+
+    public void reloadRecipes() {
+        recipeManager.registerRecipes();
+        getLogger().info("Recipes reloaded successfully!");
     }
 
     public static LifeStealCore getInstance() {
